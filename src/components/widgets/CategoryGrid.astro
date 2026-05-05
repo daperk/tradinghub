@@ -1,0 +1,82 @@
+---
+/**
+ * Healthline-style category grid - clean, minimal, vertical cards
+ */
+import { Icon } from 'astro-icon/components';
+import { getPermalink } from '~/utils/permalinks';
+
+const categories = [
+  {
+    title: 'Sleep Environment',
+    slug: 'sleep-environment',
+    icon: 'tabler:home',
+    description: 'Light, noise, temperature & air quality',
+  },
+  {
+    title: 'Sleep Tools',
+    slug: 'sleep-tools',
+    icon: 'tabler:bulb',
+    description: 'Masks, lamps, trackers & devices',
+  },
+  {
+    title: 'Habits & Routines',
+    slug: 'habits',
+    icon: 'tabler:calendar',
+    description: 'Wind-down rituals & sleep hygiene',
+  },
+  {
+    title: 'Supplements',
+    slug: 'supplements',
+    icon: 'tabler:pill',
+    description: 'Magnesium, L-theanine & natural aids',
+  },
+  {
+    title: 'Sleep Trackers',
+    slug: 'sleep-trackers',
+    icon: 'tabler:chart-bar',
+    description: 'Rings, bands & tracking devices',
+  },
+  {
+    title: 'White Noise Machines',
+    slug: 'white-noise',
+    icon: 'tabler:volume',
+    description: 'Sound machines & noise masking',
+  },
+];
+---
+
+<section class="py-12 md:py-16 bg-gray-50">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+        Browse by Topic
+      </h2>
+      <p class="text-gray-600">
+        Explore sleep optimization guides organized by category
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+      {categories.map((category) => (
+        <a
+          href={getPermalink(category.slug, 'category')}
+          class="group bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md hover:border-brand-accent transition-all duration-200"
+        >
+          <div class="flex flex-col items-start space-y-3">
+            <div class="w-12 h-12 rounded-full bg-brand-accent/10 flex items-center justify-center group-hover:bg-brand-accent/20 transition">
+              <Icon name={category.icon} class="w-6 h-6 text-brand-accent" />
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 text-sm mb-1 group-hover:text-brand-accent transition">
+                {category.title}
+              </h3>
+              <p class="text-xs text-gray-600 leading-snug">
+                {category.description}
+              </p>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

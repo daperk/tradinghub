@@ -1,0 +1,84 @@
+---
+/**
+ * Featured Topics with Images - Healthline style with visual appeal
+ */
+import { Icon } from 'astro-icon/components';
+import Image from '~/components/common/Image.astro';
+import { getPermalink } from '~/utils/permalinks';
+
+const featuredTopics = [
+  {
+    title: 'Sleep Environment',
+    slug: 'sleep-environment',
+    description: 'Master your bedroom setup with optimal light, noise, temperature, and air quality for deeper sleep.',
+    image: '~/assets/images/environment.webp',
+    icon: 'tabler:home',
+  },
+  {
+    title: 'Sleep Tools & Gadgets',
+    slug: 'sleep-tools',
+    description: 'Discover the best sleep masks, red light lamps, trackers, and devices that actually improve your rest.',
+    image: '~/assets/images/tools-supplements.webp',
+    icon: 'tabler:bulb',
+  },
+  {
+    title: 'Habits & Routines',
+    slug: 'habits',
+    description: 'Build sustainable wind-down rituals and sleep hygiene practices that work with your lifestyle.',
+    image: '~/assets/images/habits-routines.webp',
+    icon: 'tabler:calendar',
+  },
+];
+---
+
+<section class="py-12 md:py-16 lg:py-20 bg-white">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        Start Optimizing Your Sleep
+      </h2>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Choose your focus area and discover science-backed strategies to transform your nights
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {featuredTopics.map((topic) => (
+        <a
+          href={getPermalink(topic.slug, 'category')}
+          class="group bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-2xl hover:border-brand-accent transition-all duration-300"
+        >
+          <!-- Image -->
+          <div class="aspect-video overflow-hidden bg-gray-100">
+            <Image
+              src={topic.image}
+              alt={topic.title}
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              widths={[400, 600]}
+              sizes="(max-width: 768px) 100vw, 400px"
+              loading="lazy"
+            />
+          </div>
+
+          <!-- Content -->
+          <div class="p-6">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-full bg-brand-accent/10 flex items-center justify-center group-hover:bg-brand-accent group-hover:text-white transition">
+                <Icon name={topic.icon} class="w-5 h-5 text-brand-accent group-hover:text-white" />
+              </div>
+              <h3 class="text-xl font-bold text-gray-900 group-hover:text-brand-accent transition">
+                {topic.title}
+              </h3>
+            </div>
+            <p class="text-gray-600 leading-relaxed">
+              {topic.description}
+            </p>
+            <div class="mt-4 flex items-center gap-2 text-brand-accent font-semibold group-hover:gap-3 transition-all">
+              Explore Guides <Icon name="tabler:arrow-right" class="w-4 h-4" />
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>

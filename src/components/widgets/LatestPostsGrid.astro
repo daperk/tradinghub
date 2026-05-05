@@ -1,0 +1,92 @@
+---
+/**
+ * Healthline-style latest posts grid - compact cards, 2-3 columns
+ */
+import { APP_BLOG } from 'astrowind:config';
+import { findLatestPosts } from '~/utils/blog';
+import { getPermalink } from '~/utils/permalinks';
+import { getFormattedDate } from '~/utils/utils';
+import Image from '~/components/common/Image.astro';
+import { Icon } from 'astro-icon/components';
+
+const posts = APP_BLOG.isEnabled ? await findLatestPosts({ count: 6 }) : [];
+---
+
+{posts.length > 0 && (
+  <section class="py-12 md:py-16 bg-white">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex items-end justify-between mb-8">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            Latest Articles
+          </h2>
+          <p class="text-gray-600">
+            Recent guides on sleep optimization and better rest
+          </p>
+        </div>
+        <a
+          href="/blog"
+          class="hidden md:inline-flex items-center gap-2 text-brand-accent font-semibold hover:gap-3 transition-all"
+        >
+          View all <Icon name="tabler:arrow-right" class="w-4 h-4" />
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <article class="group bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg hover:border-brand-accent transition-all duration-200">
+            <a href={getPermalink(post.permalink, 'post')} class="block">
+              {post.image && (
+                <div class="aspect-video overflow-hidden bg-gray-100">
+                  <Image
+                    src={post.image}
+                    alt={post.title}
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    widths={[400, 768]}
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              <div class="p-5">
+                {post.category && (
+                  <span class="inline-block text-xs font-semibold text-brand-accent uppercase tracking-wide mb-2">
+                    {post.category.title}
+                  </span>
+                )}
+                <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-brand-accent transition line-clamp-2">
+                  {post.title}
+                </h3>
+                {post.excerpt && (
+                  <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                    {post.excerpt}
+                  </p>
+                )}
+                <div class="flex items-center gap-3 text-xs text-gray-500">
+                  <time datetime={String(post.publishDate)}>
+                    {getFormattedDate(post.publishDate)}
+                  </time>
+                  {post.readingTime && (
+                    <>
+                      <span>•</span>
+                      <span>{post.readingTime} min read</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+
+      <div class="mt-8 text-center md:hidden">
+        <a
+          href="/blog"
+          class="inline-flex items-center gap-2 text-brand-accent font-semibold hover:gap-3 transition-all"
+        >
+          View all articles <Icon name="tabler:arrow-right" class="w-4 h-4" />
+        </a>
+      </div>
+    </div>
+  </section>
+)}

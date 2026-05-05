@@ -1,0 +1,66 @@
+site:
+  name: TradingHub
+  site: 'https://tradinghub.com'
+  base: '/'
+  trailingSlash: false
+
+  googleSiteVerificationId: null
+
+metadata:
+  title:
+    default: TradingHub
+    template: '%s — TradingHub'
+  description: 'Trading expert. No hype. Risk-aware. Real numbers. Distinguish demo vs live performance.'
+  robots:
+    index: true
+    follow: true
+  openGraph:
+    site_name: TradingHub
+    images:
+      - url: '~/assets/images/default.png'
+        width: 1200
+        height: 628
+    type: website
+  twitter:
+    handle: '@tradinghub'
+    site: '@tradinghub'
+    cardType: summary_large_image
+
+i18n:
+  language: en
+  textDirection: ltr
+
+apps:
+  blog:
+    isEnabled: true
+    postsPerPage: 6
+    post:
+      isEnabled: true
+      permalink: '/%slug%'
+      robots:
+        index: true
+    list:
+      isEnabled: true
+      pathname: 'blog'
+      robots:
+        index: true
+    category:
+      isEnabled: true
+      pathname: 'category'
+      robots:
+        index: true
+    tag:
+      isEnabled: true
+      pathname: 'tag'
+      robots:
+        index: true
+    isRelatedPostsEnabled: true
+    relatedPostsCount: 4
+
+analytics:
+  vendors:
+    googleAnalytics:
+      id: null
+
+ui:
+  theme: 'system'

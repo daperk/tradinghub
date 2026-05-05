@@ -1,0 +1,134 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { Post } from '~/types';
+import { getPermalink } from '~/utils/permalinks';
+import { findImage } from '~/utils/images';
+import Image from '~/components/common/Image.astro';
+import NewsletterForm from '~/components/common/NewsletterForm.astro';
+
+export interface Props {
+  popularPosts?: Array<Post>;
+  categories?: Array<{ title: string; slug: string; count: number }>;
+}
+
+const { popularPosts = [], categories = [] } = Astro.props;
+---
+
+<aside class="space-y-8">
+  <!-- Search Box -->
+  <div class="bg-white rounded-xl shadow-md p-6">
+    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+      <Icon name="tabler:search" class="w-5 h-5 text-brand-accent" />
+      Search Guides
+    </h3>
+    <form action="/blog" method="get" class="relative" data-search-form>
+      <input
+        type="search"
+        name="q"
+        placeholder="Search sleep guides..."
+        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent focus:border-transparent transition"
+        data-search-input
+      />
+      <button
+        type="submit"
+        class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-brand-accent hover:text-brand-primary transition"
+        aria-label="Search"
+      >
+        <Icon name="tabler:arrow-right" class="w-5 h-5" />
+      </button>
+    </form>
+  </div>
+
+  <!-- Popular Posts -->
+  {popularPosts && popularPosts.length > 0 && (
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+        <Icon name="tabler:flame" class="w-5 h-5 text-brand-accent" />
+        Popular Guides
+      </h3>
+      <ul class="space-y-4">
+        {popularPosts.slice(0, 5).map(async (post) => {
+          const image = await findImage(post.image);
+          const link = getPermalink(post.permalink, 'post');
+          return (
+            <li>
+              <a href={link} class="group flex gap-3 hover:opacity-80 transition">
+                {image && (
+                  <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-gray-400">
+                    <Image
+                      src={image}
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      widths={[64, 128]}
+                      sizes="64px"
+                      alt={post.title}
+                      aspectRatio="1:1"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium text-sm line-clamp-2 group-hover:text-brand-accent transition">
+                    {post.title}
+                  </h4>
+                  {post.readingTime && (
+                    <p class="text-xs text-muted mt-1">
+                      {post.readingTime} min read
+                    </p>
+                  )}
+                </div>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  )}
+
+  <!-- Categories -->
+  {categories && categories.length > 0 && (
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+        <Icon name="tabler:folder" class="w-5 h-5 text-brand-accent" />
+        Categories
+      </h3>
+      <ul class="space-y-2">
+        {categories.map((category) => (
+          <li>
+            <a
+              href={getPermalink(category.slug, 'category')}
+              class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-100 transition group"
+            >
+              <span class="font-medium text-sm group-hover:text-brand-accent transition">
+                {category.title}
+              </span>
+              <span class="text-xs text-muted bg-gray-200 px-2 py-1 rounded-full">
+                {category.count}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  <!-- Newsletter CTA - Matches homepage styling -->
+  <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+    <div class="flex items-start gap-3 mb-4">
+      <Icon name="tabler:mail" class="w-6 h-6 flex-shrink-0 mt-1 text-brand-accent" />
+      <div>
+        <h3 class="text-lg font-bold mb-2 text-gray-900">Get Sleep Tips Weekly</h3>
+        <p class="text-sm text-gray-700 mb-4">
+          Join 12,000+ readers getting science-backed sleep optimization strategies.
+        </p>
+      </div>
+    </div>
+    <NewsletterForm
+      source="sidebar_cta"
+      layoutClass="space-y-3"
+      inputPlaceholder="Your email"
+      inputClass="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-2 focus:ring-brand-accent focus:border-transparent transition focus:outline-none"
+      buttonClass="w-full px-4 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-800 transition disabled:bg-gray-200 disabled:text-gray-600 disabled:cursor-not-allowed"
+      buttonText="Subscribe"
+    />
+  </div>
+</aside>

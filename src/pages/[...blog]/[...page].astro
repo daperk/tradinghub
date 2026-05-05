@@ -1,0 +1,97 @@
+---
+import type { InferGetStaticPropsType, GetStaticPaths } from 'astro';
+
+import Layout from '~/layouts/PageLayout.astro';
+import ModernCard from '~/components/blog/ModernCard.astro';
+import Sidebar from '~/components/blog/Sidebar.astro';
+import Pagination from '~/components/blog/Pagination.astro';
+import SearchExperience from '~/components/blog/SearchExperience.astro';
+
+import { blogListRobots, getStaticPathsBlogList, getCategoriesWithCounts, fetchPosts } from '~/utils/blog';
+
+export const prerender = true;
+
+export const getStaticPaths = (async ({ paginate }) => {
+  return await getStaticPathsBlogList({ paginate });
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { page } = Astro.props as Props;
+const currentPage = page.currentPage ?? 1;
+
+// Get categories with real post counts
+const categoriesWithCounts = await getCategoriesWithCounts();
+
+// Build a full list of posts for search and discovery
+const allPosts = await fetchPosts();
+
+// Get popular posts (last 5 for sidebar)
+const popularPosts = page.data.slice(0, 5);
+
+const metadata = {
+  title: `Sleep Optimization Guides${currentPage > 1 ? ` — Page ${currentPage}` : ''} — SleepUpgradeHub`,
+  description: 'Science-backed sleep guides, product reviews, and optimization strategies. Learn how to fall asleep faster, sleep deeper, and wake up restored.',
+  robots: {
+    index: blogListRobots?.index && currentPage === 1,
+    follow: blogListRobots?.follow,
+  },
+  openGraph: {
+    type: 'blog',
+  },
+};
+---
+
+<Layout metadata={metadata}>
+  <!-- Hero Header - Light Background with Dark Text -->
+  <section class="bg-white border-b border-gray-200 py-16 md:py-20 lg:py-24">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl text-center">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-gray-900">
+          Sleep Optimization Guides
+        </h1>
+        <p class="text-lg md:text-xl text-gray-700 max-w-2xl mx-auto">
+          Science-backed guides, honest product reviews, and practical strategies to help you sleep better naturally.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="py-12 md:py-16 lg:py-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <!-- Main Content Area -->
+        <div class="lg:col-span-8">
+          <SearchExperience posts={allPosts} categories={categoriesWithCounts} />
+
+          {currentPage === 1 && page.data.length > 0 && (
+            <!-- Featured Post -->
+            <ModernCard post={page.data[0]} featured={true} />
+          )}
+
+          <!-- Grid of Posts -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            {page.data.slice(currentPage === 1 ? 1 : 0).map((post) => (
+              <ModernCard post={post} />
+            ))}
+          </div>
+
+          <!-- Pagination -->
+          {(page.url.prev || page.url.next) && (
+            <div class="mt-12">
+              <Pagination prevUrl={page.url.prev} nextUrl={page.url.next} />
+            </div>
+          )}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:col-span-4">
+          <div class="lg:sticky lg:top-24">
+            <Sidebar popularPosts={popularPosts} categories={categoriesWithCounts} />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

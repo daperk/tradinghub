@@ -1,0 +1,145 @@
+---
+const {
+  source = 'newsletter',
+  layoutClass = 'space-y-3',
+  inputClass = '',
+  buttonClass = '',
+  buttonText = 'Subscribe',
+  inputPlaceholder = 'Enter your email',
+  redirect = '',
+} = Astro.props;
+
+const endpoint = '/api/subscribe';
+const fieldId = `email-${String(source).replace(/[^a-zA-Z0-9_-]/g, '-') || 'newsletter'}`;
+const disableSubmit = !import.meta.env.MAILERLITE_API_KEY;
+---
+
+<form action={endpoint} method="POST" class={layoutClass} data-newsletter-form>
+  <input type="hidden" name="source" value={source} />
+  {redirect && <input type="hidden" name="redirect" value={redirect} />}
+  <input type="text" name="botcheck" class="hidden" tabindex="-1" autocomplete="off" />
+
+  <div class="flex flex-col sm:flex-row gap-3 items-stretch">
+    <div class="w-full space-y-2">
+      <label for={fieldId} class="sr-only">Email address</label>
+      <input
+        id={fieldId}
+        name="email"
+        type="email"
+        placeholder={inputPlaceholder}
+        class={`w-full ${inputClass}`}
+        required
+      />
+      <p class="flex items-start gap-2 text-xs text-gray-600 leading-snug">
+        <span class="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-green-100 text-green-700">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-3 w-3">
+            <path d="M5 13l4 4L19 7" />
+          </svg>
+        </span>
+        <span>
+          I agree to the
+          <a href="/privacy" class="underline underline-offset-2 text-gray-800">Privacy Policy</a>.
+        </span>
+      </p>
+    </div>
+    <button
+      type="submit"
+      class={`sm:self-stretch sm:h-full ${buttonClass}`}
+      disabled={disableSubmit}
+      data-submit-button
+    >
+      {buttonText}
+    </button>
+  </div>
+
+  <p
+    class="text-sm hidden mt-1"
+    data-submit-feedback
+    role="status"
+    aria-live="polite"
+  ></p>
+
+  {disableSubmit && (
+    <p class="text-xs text-amber-700 mt-2">
+      Add a MAILERLITE_API_KEY environment variable to enable live signups.
+    </p>
+  )}
+</form>
+
+<script>
+  const enhanceForms = () => {
+    document.querySelectorAll('[data-newsletter-form]').forEach((formEl) => {
+      const form = formEl as HTMLFormElement;
+      if (form.dataset.enhanced === 'true') return;
+      form.dataset.enhanced = 'true';
+
+      const button = form.querySelector('[data-submit-button]') as HTMLButtonElement | null;
+      const feedback = form.querySelector('[data-submit-feedback]') as HTMLElement | null;
+
+      if (!button || !feedback) return;
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        feedback.classList.add('hidden');
+        feedback.textContent = '';
+        feedback.classList.remove('text-green-700', 'text-red-700');
+
+        const formData = new FormData(form);
+        const payload = {
+          email: formData.get('email'),
+          redirect: formData.get('redirect'),
+          botcheck: formData.get('botcheck'),
+        };
+
+        button.disabled = true;
+        button.textContent = 'Sending...';
+
+        let wasSuccessful = false;
+
+        try {
+          const response = await fetch(form.getAttribute('action') || '/api/subscribe', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          wasSuccessful = response.ok;
+          feedback.textContent = wasSuccessful
+            ? 'Thank you! You are now subscribed.'
+            : data?.message || 'Unable to subscribe right now. Please try again.';
+
+          feedback.classList.remove('hidden');
+          feedback.classList.toggle('text-green-700', wasSuccessful);
+          feedback.classList.toggle('text-red-700', !wasSuccessful);
+        } catch (error) {
+          console.error('Newsletter submit error', error);
+          feedback.textContent = 'Something went wrong. Please try again.';
+          feedback.classList.remove('hidden');
+          feedback.classList.add('text-red-700');
+          wasSuccessful = false;
+        } finally {
+          if (wasSuccessful) {
+            form.reset();
+          }
+
+          button.disabled = wasSuccessful;
+          button.textContent = wasSuccessful ? 'Subscribed' : 'Subscribe';
+        }
+      });
+    });
+  };
+
+  if (typeof window !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', enhanceForms, { once: true });
+    } else {
+      enhanceForms();
+    }
+  }
+</script>

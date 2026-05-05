@@ -1,0 +1,234 @@
+---
+import { Icon } from 'astro-icon/components';
+
+import Image from '~/components/common/Image.astro';
+import PostTags from '~/components/blog/Tags.astro';
+import SocialShare from '~/components/common/SocialShare.astro';
+import Schema from '~/components/common/Schema.astro';
+import TOC from '~/components/blog/TOC.astro';
+import AuthorBio from '~/components/blog/AuthorBio.astro';
+import AffiliateDisclosure from '~/components/common/AffiliateDisclosure.astro';
+import AdSlot from '~/components/common/AdSlot.astro';
+
+import { getPermalink } from '~/utils/permalinks';
+import { getFormattedDate } from '~/utils/utils';
+import NewsletterForm from '~/components/common/NewsletterForm.astro';
+
+import type { Post } from '~/types';
+
+export interface Props {
+  post: Post;
+  url: string | URL;
+}
+
+const { post, url } = Astro.props;
+
+// Generate Article Schema
+const articleSchema = {
+  headline: post.title,
+  description: post.excerpt || '',
+  datePublished: post.publishDate.toISOString(),
+  dateModified: (post.updateDate || post.publishDate).toISOString(),
+  author: post.author || 'SleepUpgradeHub',
+  image: post.image ? String(url).replace(/\/[^\/]+$/, '') + post.image : undefined,
+  url: String(url),
+};
+---
+
+<!-- Article Schema for search engines -->
+<Schema type="article" article={articleSchema} />
+
+<!-- HEALTHLINE-STYLE ARTICLE LAYOUT: Title First, Image Below, Clean Reading Experience -->
+<section class="relative bg-white">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <article class="relative">
+      <!-- ABOVE-THE-FOLD: Title, Meta, No Giant Hero -->
+      <header class="pt-8 pb-6 border-b border-gray-200">
+        <div class="max-w-4xl mx-auto">
+          <!-- Breadcrumb / Category -->
+          {post.category && (
+            <div class="mb-4">
+              <a
+                href={getPermalink(post.category.slug, 'category')}
+                class="inline-block text-sm font-semibold text-brand-accent uppercase tracking-wide hover:underline"
+              >
+                {post.category.title}
+              </a>
+            </div>
+          )}
+
+          <!-- Title - Healthline style (immediately readable) -->
+          <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4 text-gray-900">
+            {post.title}
+          </h1>
+
+          <!-- Subtitle/Excerpt -->
+          {post.excerpt && (
+            <p class="text-lg md:text-xl text-gray-600 leading-relaxed mb-6">
+              {post.excerpt}
+            </p>
+          )}
+
+          <!-- Meta Info (Author, Date, Read Time) -->
+          <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+            {post.author && (
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-brand-accent text-white flex items-center justify-center text-xs font-bold">
+                  {post.author.charAt(0).toUpperCase()}
+                </div>
+                <span class="font-medium">{post.author}</span>
+              </div>
+            )}
+            <span class="text-gray-400">•</span>
+            <time datetime={String(post.publishDate)}>{getFormattedDate(post.publishDate)}</time>
+            {post.readingTime && (
+              <>
+                <span class="text-gray-400">•</span>
+                <span class="flex items-center gap-1">
+                  <Icon name="tabler:clock" class="w-4 h-4" />
+                  {post.readingTime} min read
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <!-- OPTIONAL HERO IMAGE - Small, Below Title (Healthline style) -->
+      {post.image && (
+        <div class="py-6 border-b border-gray-200">
+          <div class="max-w-4xl mx-auto">
+            <div class="rounded-lg overflow-hidden" style="max-height: 500px;">
+              <Image
+                src={post.image}
+                class="w-full h-auto object-cover"
+                widths={[400, 768, 1024]}
+                sizes="(max-width: 768px) 100vw, 800px"
+                alt={post.title}
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <!-- MAIN ARTICLE BODY + SIDEBAR -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 py-8">
+        <!-- MAIN CONTENT COLUMN (Ideal Reading Width ~700-800px) -->
+        <div class="lg:col-span-8 xl:col-span-8">
+          <div class="max-w-3xl mx-auto lg:mx-0">
+            <!-- Affiliate disclosure above the fold (FTC + Amazon Associates compliant) -->
+            <AffiliateDisclosure variant="block" className="mb-6" />
+
+            <!-- Top of article ad slot (no-op until AdSense enabled) -->
+            <AdSlot slot="article-top" format="auto" className="my-4" />
+
+            <!-- Article Content with Healthline-style Typography -->
+            <div
+              class="prose prose-lg max-w-none
+                     prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-gray-900
+                     prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-3 prose-h2:border-b prose-h2:border-gray-200
+                     prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+                     prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-5
+                     prose-a:text-brand-accent prose-a:no-underline hover:prose-a:underline prose-a:font-medium
+                     prose-strong:text-gray-900 prose-strong:font-semibold
+                     prose-ul:my-5 prose-ol:my-5 prose-li:my-1.5 prose-li:text-gray-700
+                     prose-blockquote:border-l-4 prose-blockquote:border-brand-accent prose-blockquote:bg-gray-50
+                     prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:my-6 prose-blockquote:rounded-r prose-blockquote:not-italic
+                     prose-blockquote:text-gray-700
+                     prose-code:text-brand-accent prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+                     prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-lg prose-pre:shadow-md
+                     prose-img:rounded-lg prose-img:shadow-md prose-img:my-6
+                     prose-hr:border-gray-200 prose-hr:my-8
+                     prose-table:border-collapse prose-th:bg-gray-50 prose-th:p-3 prose-td:p-3 prose-td:border prose-td:border-gray-200"
+            >
+              <slot />
+            </div>
+
+            <!-- Bottom of article ad slot (no-op until AdSense enabled) -->
+            <AdSlot slot="article-bottom" format="auto" className="my-8" />
+
+            <!-- Tags Section -->
+            {post.tags && post.tags.length > 0 && (
+              <div class="mt-10 pt-6 border-t border-gray-200">
+                <h3 class="text-base font-bold mb-3 text-gray-900 flex items-center gap-2">
+                  <Icon name="tabler:tags" class="w-4 h-4" />
+                  Topics Covered
+                </h3>
+                <PostTags tags={post.tags} />
+              </div>
+            )}
+
+            <!-- Author Bio Block (Healthline style) -->
+            <AuthorBio author={post.author} />
+          </div>
+        </div>
+
+        <!-- SIDEBAR (Sticky on Desktop) -->
+        <div class="lg:col-span-4 xl:col-span-4">
+          <div class="lg:sticky lg:top-24 space-y-6">
+            <!-- Table of Contents (Healthline style) -->
+            <TOC />
+
+            <!-- Share Card -->
+            <div class="bg-white rounded-xl border border-gray-200 p-6">
+              <h3 class="text-base font-bold mb-4 text-gray-900 flex items-center gap-2">
+                <Icon name="tabler:share" class="w-4 h-4 text-brand-accent" />
+                Share This Guide
+              </h3>
+              <SocialShare
+                url={url}
+                text={post.title}
+                class="flex flex-wrap items-center gap-3"
+              />
+            </div>
+
+            <!-- Related Topics -->
+            {post.tags && post.tags.length > 0 && (
+              <div class="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 class="text-base font-bold mb-4 text-gray-900 flex items-center gap-2">
+                  <Icon name="tabler:bookmark" class="w-4 h-4 text-brand-accent" />
+                  Related Topics
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {post.tags.slice(0, 5).map((tag) => (
+                    <a
+                      href={getPermalink(tag.slug, 'tag')}
+                      class="inline-block px-3 py-1.5 bg-gray-100 hover:bg-brand-accent hover:text-white rounded-full text-xs font-medium transition"
+                    >
+                      #{tag.title || tag.slug}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <!-- Compact Email CTA (Sidebar) -->
+            <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-md">
+              <div class="flex items-start gap-3 mb-3">
+                <Icon name="tabler:mail" class="w-7 h-7 text-brand-accent mt-1" />
+                <div>
+                  <h3 class="text-lg font-bold mb-1 text-gray-900">
+                    Get Sleep Tips Weekly
+                  </h3>
+                  <p class="text-sm text-gray-700 leading-snug">
+                    Science-backed strategies delivered to your inbox.
+                  </p>
+                </div>
+              </div>
+              <NewsletterForm
+                source="article_sidebar_cta"
+                layoutClass="space-y-3"
+                inputPlaceholder="Your email"
+                inputClass="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-2 focus:ring-brand-accent focus:border-transparent transition focus:outline-none"
+                buttonClass="inline-block w-full px-4 py-3 bg-gray-900 text-white rounded-lg font-semibold text-center text-sm hover:bg-gray-800 transition disabled:bg-gray-200 disabled:text-gray-600 disabled:cursor-not-allowed"
+                buttonText="Subscribe"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

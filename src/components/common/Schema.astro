@@ -1,0 +1,146 @@
+---
+/**
+ * Schema.astro - JSON-LD Structured Data Component
+ * Implements schema.org markup for rich results
+ *
+ * Supports:
+ * - WebSite schema (sitewide)
+ * - Organization schema (brand info)
+ * - Article/BlogPosting schema (blog posts)
+ * - FAQPage schema (FAQ sections)
+ */
+
+import { SITE, METADATA } from 'astrowind:config';
+
+export interface Props {
+  type: 'website' | 'organization' | 'article' | 'faqpage';
+  // Article-specific props
+  article?: {
+    headline: string;
+    description: string;
+    datePublished: string;
+    dateModified?: string;
+    author?: string;
+    image?: string;
+    url: string;
+  };
+  // FAQPage-specific props
+  faqs?: Array<{
+    question: string;
+    answer: string;
+  }>;
+}
+
+const { type, article, faqs } = Astro.props;
+
+const siteUrl = SITE?.site || 'https://sleepupgradehub.com';
+const siteName = SITE?.name || 'SleepUpgradeHub';
+
+// WebSite Schema - for sitewide discovery
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: siteName,
+  url: siteUrl,
+  description: METADATA?.description || 'Science-backed guides, tools, and sleep optimization strategies to help you fall asleep faster, sleep deeper, and wake up restored.',
+  inLanguage: 'en-US',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${siteUrl}/blog?q={search_term_string}`
+    },
+    'query-input': 'required name=search_term_string'
+  }
+};
+
+// Organization Schema - brand information
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: siteName,
+  url: siteUrl,
+  logo: {
+    '@type': 'ImageObject',
+    url: `${siteUrl}/logo.png`,
+    width: 512,
+    height: 512
+  },
+  description: METADATA?.description || 'Science-backed guides, tools, and sleep optimization strategies to help you fall asleep faster, sleep deeper, and wake up restored.',
+  sameAs: [
+    // Add real social media URLs when available
+    // 'https://twitter.com/sleepupgradehub',
+    // 'https://facebook.com/sleepupgradehub',
+  ]
+};
+
+// Article Schema - for blog posts
+const articleSchema = article ? {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: article.headline,
+  description: article.description,
+  image: article.image || `${siteUrl}/default.png`,
+  datePublished: article.datePublished,
+  dateModified: article.dateModified || article.datePublished,
+  author: {
+    '@type': 'Organization',
+    name: article.author || siteName,
+    url: siteUrl
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: siteName,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${siteUrl}/logo.png`,
+      width: 512,
+      height: 512
+    }
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': article.url
+  }
+} : null;
+
+// FAQPage Schema - for FAQ sections
+const faqSchema = faqs && faqs.length > 0 ? {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(faq => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer
+    }
+  }))
+} : null;
+
+// Select the appropriate schema(s) based on type
+let schemas: any[] = [];
+
+switch (type) {
+  case 'website':
+    schemas = [websiteSchema, organizationSchema];
+    break;
+  case 'organization':
+    schemas = [organizationSchema];
+    break;
+  case 'article':
+    if (articleSchema) {
+      schemas = [articleSchema];
+    }
+    break;
+  case 'faqpage':
+    if (faqSchema) {
+      schemas = [faqSchema];
+    }
+    break;
+}
+---
+
+{schemas.map((schema) => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+))}

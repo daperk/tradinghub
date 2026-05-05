@@ -1,0 +1,58 @@
+---
+/**
+ * CookieConsent — minimal consent banner shown only when AdSense / analytics
+ * is enabled. Stores choice in localStorage; honors GDPR/CCPA "reject" path.
+ */
+const adsenseEnabled = import.meta.env.PUBLIC_ADSENSE_ENABLED === 'true';
+const analyticsId = import.meta.env.PUBLIC_GA_ID || '';
+const needsConsent = adsenseEnabled || !!analyticsId;
+---
+
+{needsConsent && (
+  <div
+    id="cookie-consent"
+    class="fixed inset-x-0 bottom-0 z-50 hidden p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 shadow-lg"
+  >
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row gap-4 items-center justify-between text-sm">
+      <p class="m-0">
+        We use cookies for analytics and personalized ads. By clicking
+        <strong>Accept</strong> you agree to their use.
+        <a href="/privacy" class="underline">Privacy Policy</a>.
+      </p>
+      <div class="flex gap-2 shrink-0">
+        <button
+          id="cookie-reject"
+          class="px-4 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-50 dark:hover:bg-slate-800"
+        >
+          Reject
+        </button>
+        <button
+          id="cookie-accept"
+          class="px-4 py-2 text-sm bg-primary text-white rounded hover:opacity-90"
+        >
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    (() => {
+      const KEY = 'cookie-consent-v1';
+      const banner = document.getElementById('cookie-consent');
+      const stored = localStorage.getItem(KEY);
+      if (!stored && banner) banner.classList.remove('hidden');
+
+      const set = (val) => {
+        localStorage.setItem(KEY, val);
+        if (banner) banner.classList.add('hidden');
+        if (val === 'accept') {
+          window.dispatchEvent(new CustomEvent('consent:accept'));
+        }
+      };
+
+      document.getElementById('cookie-accept')?.addEventListener('click', () => set('accept'));
+      document.getElementById('cookie-reject')?.addEventListener('click', () => set('reject'));
+    })();
+  </script>
+)}

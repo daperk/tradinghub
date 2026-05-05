@@ -1,0 +1,26 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import Hero from '~/components/widgets/Hero.astro';
+import Features2 from '~/components/widgets/Features2.astro';
+
+const metadata = {
+  title: 'About TradingHub',
+};
+---
+
+<Layout metadata={metadata}>
+  <Hero tagline="About">
+    <Fragment slot="title">TradingHub</Fragment>
+    <Fragment slot="subtitle">Trading expert. No hype. Risk-aware. Real numbers. Distinguish demo vs live performance.</Fragment>
+  </Hero>
+
+  <Features2
+    title="What we do differently"
+    columns={3}
+    items={[
+      { title: 'No paid placements', description: 'Recommendations are independent. Affiliate links never alter rankings.', icon: 'tabler:shield-check' },
+      { title: 'Honest tradeoffs', description: 'Every guide names what we'd skip and why.', icon: 'tabler:scale' },
+      { title: 'Updated frequently', description: 'We revisit content as products and pricing change.', icon: 'tabler:refresh' },
+    ]}
+  />
+</Layout>

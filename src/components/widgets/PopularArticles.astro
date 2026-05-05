@@ -1,0 +1,54 @@
+---
+/**
+ * Healthline-style popular/featured articles section
+ */
+import { APP_BLOG } from 'astrowind:config';
+import { findLatestPosts } from '~/utils/blog';
+import { getPermalink } from '~/utils/permalinks';
+import { Icon } from 'astro-icon/components';
+
+const posts = APP_BLOG.isEnabled ? await findLatestPosts({ count: 4 }) : [];
+---
+
+{posts.length > 0 && (
+  <section class="py-12 md:py-16 bg-gray-50">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="mb-8">
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+          Popular Guides
+        </h2>
+        <p class="text-gray-600">
+          Most-read sleep optimization articles this month
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {posts.map((post, index) => (
+          <article class="group flex gap-4 bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-brand-accent transition-all duration-200">
+            <div class="flex-shrink-0">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-brand-accent/10 text-brand-accent font-bold text-sm">
+                {index + 1}
+              </span>
+            </div>
+            <div class="flex-1">
+              <a href={getPermalink(post.permalink, 'post')} class="block">
+                {post.category && (
+                  <span class="inline-block text-xs font-semibold text-brand-accent uppercase tracking-wide mb-1">
+                    {post.category.title}
+                  </span>
+                )}
+                <h3 class="text-base font-bold text-gray-900 mb-1 group-hover:text-brand-accent transition line-clamp-2">
+                  {post.title}
+                </h3>
+                <p class="text-sm text-gray-600 flex items-center gap-2">
+                  <Icon name="tabler:clock" class="w-3.5 h-3.5" />
+                  {post.readingTime || '5'} min read
+                </p>
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

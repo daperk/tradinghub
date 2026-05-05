@@ -1,0 +1,47 @@
+---
+/**
+ * AdSlot — feature-flagged Google AdSense unit.
+ *
+ * Renders nothing until BOTH:
+ *   PUBLIC_ADSENSE_ENABLED=true
+ *   PUBLIC_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX
+ *
+ * are set in the build environment. This keeps placement code in the repo
+ * without exposing empty slots during AdSense review.
+ */
+interface Props {
+  slot: string;
+  format?: 'auto' | 'fluid' | 'rectangle' | 'horizontal' | 'vertical';
+  layout?: string;
+  responsive?: boolean;
+  className?: string;
+}
+
+const {
+  slot,
+  format = 'auto',
+  layout,
+  responsive = true,
+  className = 'my-8',
+} = Astro.props as Props;
+
+const enabled = import.meta.env.PUBLIC_ADSENSE_ENABLED === 'true';
+const client = import.meta.env.PUBLIC_ADSENSE_CLIENT;
+---
+
+{enabled && client && (
+  <div class={`ad-slot ${className}`} data-ad-slot={slot}>
+    <ins
+      class="adsbygoogle"
+      style="display:block"
+      data-ad-client={client}
+      data-ad-slot={slot}
+      data-ad-format={format}
+      data-ad-layout={layout}
+      data-full-width-responsive={responsive ? 'true' : 'false'}
+    />
+    <script is:inline>
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+)}

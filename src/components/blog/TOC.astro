@@ -1,0 +1,46 @@
+---
+/**
+ * Table of Contents - Healthline style (dynamic, sticky sidebar)
+ * Note: This is a layout placeholder. Full dynamic TOC requires client-side JS.
+ */
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  headings?: Array<{ text: string; slug: string; depth: number }>;
+}
+
+const { headings = [] } = Astro.props;
+---
+
+{headings && headings.length > 0 && (
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <h3 class="text-base font-bold mb-4 text-gray-900 flex items-center gap-2">
+      <Icon name="tabler:list" class="w-5 h-5 text-brand-accent" />
+      In This Article
+    </h3>
+    <nav class="space-y-2">
+      {headings.filter(h => h.depth <= 3).map((heading) => (
+        <a
+          href={`#${heading.slug}`}
+          class="block text-sm text-gray-600 hover:text-brand-accent transition"
+          style={`padding-left: ${(heading.depth - 2) * 0.75}rem`}
+        >
+          {heading.text}
+        </a>
+      ))}
+    </nav>
+  </div>
+)}
+
+<!-- Fallback when no headings provided -->
+{(!headings || headings.length === 0) && (
+  <div class="bg-white rounded-xl border border-gray-200 p-6">
+    <h3 class="text-base font-bold mb-4 text-gray-900 flex items-center gap-2">
+      <Icon name="tabler:list" class="w-5 h-5 text-brand-accent" />
+      In This Article
+    </h3>
+    <p class="text-sm text-gray-500">
+      Table of contents will appear here
+    </p>
+  </div>
+)}

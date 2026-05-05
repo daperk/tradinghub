@@ -1,0 +1,35 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { Post } from '~/types';
+import ModernCard from '~/components/blog/ModernCard.astro';
+
+export interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+
+// Mock related posts logic - in production, you'd filter by tags/category
+// For now, just showing component structure
+const relatedPosts: Post[] = [];
+---
+
+{relatedPosts && relatedPosts.length > 0 && (
+  <section class="mt-16 pt-12 border-t-2 border-gray-200">
+    <div class="mb-8">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-center gap-3">
+        <Icon name="tabler:books" class="w-8 h-8 text-brand-accent" />
+        Related Sleep Guides
+      </h2>
+      <p class="text-lg text-gray-600">
+        Continue your sleep optimization journey with these related guides
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      {relatedPosts.slice(0, 3).map((relatedPost) => (
+        <ModernCard post={relatedPost} />
+      ))}
+    </div>
+  </section>
+)}

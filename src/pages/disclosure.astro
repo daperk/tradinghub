@@ -1,0 +1,83 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+
+const metadata = {
+  title: 'Affiliate Disclosure — TradingHub',
+  description: 'How TradingHub earns from affiliate links and ads, and our commitment to honest, independent recommendations.',
+  robots: { index: true, follow: true },
+};
+---
+
+<Layout metadata={metadata}>
+  <section class="px-4 py-16 sm:px-6 mx-auto lg:px-8 lg:py-20 max-w-4xl">
+    <h1 class="font-bold font-heading text-4xl md:text-5xl leading-tighter tracking-tighter mb-4">
+      Affiliate Disclosure
+    </h1>
+    <p class="text-muted mb-8">
+      Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+    </p>
+
+    <div class="prose prose-lg max-w-none">
+      <p>
+        TradingHub is a participant in affiliate advertising programs designed to provide a
+        means for us to earn fees by linking to retailer websites. When you click a link on this
+        site and make a purchase, we may receive a commission — at no additional cost to you.
+      </p>
+
+      <h2>Programs We Participate In</h2>
+      <ul>
+        <li>
+          <strong>Amazon Associates Program:</strong> As an Amazon Associate, we earn from qualifying
+          purchases. The commission we earn helps us keep this site free to use.
+        </li>
+        <li>
+          <strong>Other affiliate networks:</strong> ShareASale, Impact, Awin, and direct
+          partnerships with sleep brands. All disclosed where applicable.
+        </li>
+      </ul>
+
+      <h2>Editorial Independence</h2>
+      <p>
+        Affiliate relationships <em>never</em> dictate which products we recommend. We test, compare,
+        and review based on:
+      </p>
+      <ul>
+        <li>Published clinical research and sleep science</li>
+        <li>Independent customer reviews and Reddit consensus</li>
+        <li>Hands-on testing where feasible</li>
+        <li>Transparent ingredient and spec analysis</li>
+      </ul>
+      <p>
+        If a product underperforms, we say so — even if it pays a higher commission. If a non-affiliate
+        product is the better choice, we recommend it anyway.
+      </p>
+
+      <h2>Pricing and Availability</h2>
+      <p>
+        Prices and availability shown on this site are accurate as of the date stated on each post,
+        but they change. The retailer's checkout page is always the source of truth. We do not control
+        third-party pricing.
+      </p>
+
+      <h2>Advertising</h2>
+      <p>
+        This site may display ads from networks like Google AdSense. Those networks may use cookies
+        to serve ads based on your prior visits. You can opt out of personalized advertising by
+        visiting <a href="https://www.google.com/settings/ads" rel="nofollow noopener" target="_blank">Google Ads Settings</a>.
+      </p>
+
+      <h2>Medical Disclaimer</h2>
+      <p>
+        Content on TradingHub is for informational purposes only and is not medical advice.
+        Always consult a qualified healthcare provider for sleep disorders, supplement interactions,
+        or any health concern.
+      </p>
+
+      <h2>Questions?</h2>
+      <p>
+        If you have any questions about how we earn or how we make recommendations, contact us via
+        the <a href="/contact">contact page</a>.
+      </p>
+    </div>
+  </section>
+</Layout>

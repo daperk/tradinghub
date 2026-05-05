@@ -1,0 +1,333 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Icon } from 'astro-icon/components';
+import type { Post } from '~/types';
+
+import { findImage } from '~/utils/images';
+import { getPermalink } from '~/utils/permalinks';
+import { getFormattedDate } from '~/utils/utils';
+
+interface Props {
+  posts: Array<Post>;
+  categories: Array<{ title: string; slug: string; count: number }>;
+}
+
+const { posts = [], categories = [] } = Astro.props as Props;
+
+const searchIndex = await Promise.all(
+  posts.map(async (post) => {
+    const image = (await findImage(post.image)) as ImageMetadata | string | undefined;
+    const normalizedImage = typeof image === 'string' ? image : image?.src;
+    return {
+      title: post.title,
+      excerpt: post.excerpt,
+      category: post.category?.title || 'Sleep Optimization',
+      categorySlug: post.category?.slug || 'sleep-optimization',
+      permalink: getPermalink(post.permalink, 'post'),
+      publishDate: post.publishDate,
+      readingTime: post.readingTime,
+      tags: post.tags?.map((tag) => tag.title) || [],
+      image: normalizedImage,
+    };
+  })
+);
+
+const serializedSearchIndex = searchIndex.map((post) => ({
+  ...post,
+  publishDate: post.publishDate instanceof Date ? post.publishDate.toISOString() : post.publishDate,
+}));
+---
+
+<section class="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 md:p-8 mb-12" aria-labelledby="search-guides-heading">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+    <div>
+      <p class="text-sm uppercase tracking-widest font-semibold text-brand-accent mb-2">Find What You Need</p>
+      <h2 id="search-guides-heading" class="text-2xl md:text-3xl font-bold text-gray-900">Search sleep guides, reviews, and protocols</h2>
+      <p class="text-muted mt-2">Type a symptom, tool, or category to surface the most relevant articles from SleepUpgradeHub.</p>
+    </div>
+    <div class="flex items-center gap-2 text-sm bg-brand-accent/10 text-brand-accent px-3 py-2 rounded-full">
+      <Icon name="tabler:shield-check" class="w-4 h-4" />
+      <span>Privacy-friendly internal search</span>
+    </div>
+  </div>
+
+  <form class="relative mb-4" data-search-form>
+    <label class="sr-only" for="site-search-input">Search sleep content</label>
+    <input
+      id="site-search-input"
+      type="search"
+      name="q"
+      inputmode="search"
+      autocomplete="off"
+      placeholder="Search insomnia fixes, bedroom upgrades, trackers, supplements..."
+      class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-transparent transition"
+      data-search-input
+    />
+    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand-accent hover:text-brand-primary transition" aria-label="Run search">
+      <Icon name="tabler:arrow-right" class="w-5 h-5" />
+    </button>
+  </form>
+
+  <div class="flex flex-wrap gap-2 mb-6" aria-label="Popular categories">
+    {categories.slice(0, 8).map((category) => (
+      <button
+        class="px-3 py-1 text-sm rounded-full border border-gray-200 hover:bg-brand-accent hover:text-white transition"
+        type="button"
+        data-search-category={category.slug}
+      >
+        {category.title} ({category.count})
+      </button>
+    ))}
+  </div>
+
+  <div class="flex items-center justify-between mb-4">
+    <p class="text-sm text-muted" data-search-count>Showing featured articles to start.</p>
+    <a class="text-sm text-brand-accent hover:text-brand-primary font-semibold" href="#search-results">Skip to results</a>
+  </div>
+
+  <div id="search-results" class="space-y-4" data-search-results>
+    {searchIndex.slice(0, 5).map((post) => (
+      <article class="flex gap-4 p-4 border border-gray-200 rounded-xl hover:shadow-lg transition bg-white" aria-label={`Result: ${post.title}`}>
+        {post.image && (
+          <div class="w-28 h-28 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
+            <img src={String(post.image)} alt={post.title} class="w-full h-full object-cover" loading="lazy" decoding="async" />
+          </div>
+        )}
+        <div class="flex-1 space-y-2">
+          <div class="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide text-brand-accent font-semibold">
+            <span class="inline-flex items-center gap-2">
+              <Icon name="tabler:folder" class="w-4 h-4" />
+              {post.category}
+            </span>
+            <span class="inline-flex items-center gap-2 text-xs text-muted">
+              <Icon name="tabler:clock" class="w-4 h-4" />
+              {getFormattedDate(post.publishDate)}
+            </span>
+          </div>
+          <a href={post.permalink} class="block text-lg font-bold text-gray-900 hover:text-brand-accent transition">
+            {post.title}
+          </a>
+          {post.excerpt && <p class="text-sm text-muted line-clamp-2">{post.excerpt}</p>}
+          <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
+            {post.readingTime && (
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full">
+                <Icon name="tabler:book" class="w-4 h-4" /> {post.readingTime} min read
+              </span>
+            )}
+            <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full">
+              <Icon name="tabler:tags" class="w-4 h-4" />
+              {post.tags.slice(0, 2).join(', ')}
+            </span>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <p class="text-sm text-muted mt-4 hidden" data-search-empty>No results found yet. Try a different keyword or clear the category filter.</p>
+
+  <script is:inline type="application/json" id="search-index" aria-hidden="true">{JSON.stringify(serializedSearchIndex)}</script>
+  <script>
+    const searchDataElement = document.getElementById('search-index');
+    const searchResults = document.querySelector<HTMLElement>('[data-search-results]');
+    const searchCount = document.querySelector<HTMLElement>('[data-search-count]');
+    const emptyState = document.querySelector<HTMLElement>('[data-search-empty]');
+    const categoryButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-search-category]'));
+    const searchForms = Array.from(document.querySelectorAll<HTMLFormElement>('[data-search-form]'));
+    const searchInputs = Array.from(document.querySelectorAll<HTMLInputElement>('[data-search-input]'));
+
+    if (searchDataElement && searchResults && searchCount) {
+      type SearchPost = {
+        title: string;
+        excerpt?: string;
+        category?: string;
+        categorySlug?: string;
+        permalink: string;
+        publishDate: string;
+        tags?: string[];
+        readingTime?: number;
+        image?: string;
+      };
+
+      const posts: SearchPost[] = JSON.parse(searchDataElement.textContent || '[]');
+      const params = new URLSearchParams(window.location.search);
+      let activeCategory = params.get('category') || '';
+      let query = params.get('q') || '';
+
+      const resultsEl = searchResults;
+      const countEl = searchCount;
+      const emptyEl = emptyState;
+
+      searchInputs.forEach((input) => {
+        input.value = query;
+      });
+
+      const normalize = (value = '') => value.toLowerCase();
+
+      function updateURL() {
+        const nextParams = new URLSearchParams(window.location.search);
+        if (query) {
+          nextParams.set('q', query);
+        } else {
+          nextParams.delete('q');
+        }
+
+        if (activeCategory) {
+          nextParams.set('category', activeCategory);
+        } else {
+          nextParams.delete('category');
+        }
+
+        const newUrl = `${window.location.pathname}${nextParams.toString() ? `?${nextParams.toString()}` : ''}${window.location.hash}`;
+        window.history.replaceState({}, '', newUrl);
+      }
+
+      function filterPosts() {
+        const normalizedQuery = normalize(query.trim());
+        const filtered = posts.filter((post) => {
+          const matchesCategory = !activeCategory || post.categorySlug === activeCategory;
+          const matchesQuery =
+            !normalizedQuery ||
+            normalize(post.title).includes(normalizedQuery) ||
+            normalize(post.excerpt || '').includes(normalizedQuery) ||
+            (Array.isArray(post.tags) && post.tags.some((tag) => normalize(tag).includes(normalizedQuery)));
+          return matchesCategory && matchesQuery;
+        });
+
+        renderResults(filtered);
+        updateURL();
+      }
+
+      function renderResults(items: SearchPost[]) {
+        resultsEl.innerHTML = '';
+        if (!items.length) {
+          emptyEl?.classList.remove('hidden');
+          countEl.textContent = 'No articles match that search yet.';
+          return;
+        }
+        emptyEl?.classList.add('hidden');
+        countEl.textContent = `Showing ${items.length} ${items.length === 1 ? 'result' : 'results'}.`;
+        const formatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        items.slice(0, 20).forEach((post) => {
+          const card = document.createElement('article');
+          card.className = 'flex gap-4 p-4 border border-gray-200 rounded-xl hover:shadow-lg transition bg-white';
+          card.setAttribute('aria-label', `Result: ${post.title}`);
+
+          const imageWrapper = document.createElement('div');
+          if (post.image) {
+            imageWrapper.className = 'w-28 h-28 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0';
+            const img = document.createElement('img');
+            img.src = post.image;
+            img.alt = post.title;
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.className = 'w-full h-full object-cover';
+            imageWrapper.appendChild(img);
+            card.appendChild(imageWrapper);
+          }
+
+          const body = document.createElement('div');
+          body.className = 'flex-1 space-y-2';
+
+          const metaRow = document.createElement('div');
+          metaRow.className = 'flex flex-wrap items-center gap-3 text-xs uppercase tracking-wide text-brand-accent font-semibold';
+          metaRow.innerHTML = `
+            <span class="inline-flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M4 6h16"></path>
+                <path d="M4 12h16"></path>
+                <path d="M4 18h16"></path>
+              </svg>
+              ${post.category}
+            </span>
+            <span class="inline-flex items-center gap-2 text-xs text-muted">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M12 6v6l4 2"></path>
+                <circle cx="12" cy="12" r="9"></circle>
+              </svg>
+              ${formatter.format(new Date(post.publishDate))}
+            </span>
+          `;
+
+          const titleLink = document.createElement('a');
+          titleLink.href = post.permalink;
+          titleLink.textContent = post.title;
+          titleLink.className = 'block text-lg font-bold text-gray-900 hover:text-brand-accent transition';
+
+          const excerpt = document.createElement('p');
+          excerpt.textContent = post.excerpt || '';
+          excerpt.className = 'text-sm text-muted line-clamp-2';
+
+          const tagRow = document.createElement('div');
+          tagRow.className = 'flex flex-wrap items-center gap-2 text-xs text-muted';
+          if (post.readingTime) {
+            const badge = document.createElement('span');
+            badge.className = 'inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full';
+            badge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 6v6l4 2"></path><circle cx="12" cy="12" r="9"></circle></svg> ${post.readingTime} min read`;
+            tagRow.appendChild(badge);
+          }
+          if (post.tags?.length) {
+            const tagBadge = document.createElement('span');
+            tagBadge.className = 'inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full';
+            tagBadge.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M7 7h10v10h-10z"></path></svg> ${post.tags.slice(0, 2).join(', ')}`;
+            tagRow.appendChild(tagBadge);
+          }
+
+          body.appendChild(metaRow);
+          body.appendChild(titleLink);
+          if (post.excerpt) body.appendChild(excerpt);
+          body.appendChild(tagRow);
+
+          card.appendChild(body);
+          resultsEl.appendChild(card);
+        });
+      }
+
+      function syncInputs(target: HTMLInputElement) {
+        searchInputs.forEach((input) => {
+          if (input !== target) {
+            input.value = target.value;
+          }
+        });
+      }
+
+      searchInputs.forEach((input) => {
+        input.addEventListener('input', (event) => {
+          const target = event.target as HTMLInputElement | null;
+          if (!target) return;
+          query = target.value;
+          syncInputs(target);
+          filterPosts();
+        });
+      });
+
+      searchForms.forEach((form) => {
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          filterPosts();
+        });
+      });
+
+      categoryButtons.forEach((button) => {
+        if (button.dataset.searchCategory === activeCategory) {
+          button.classList.add('bg-brand-accent', 'text-white');
+        }
+        button.addEventListener('click', () => {
+          activeCategory = activeCategory === button.dataset.searchCategory ? '' : button.dataset.searchCategory || '';
+          categoryButtons.forEach((btn) =>
+            btn.classList.toggle('bg-brand-accent', btn.dataset.searchCategory === activeCategory)
+          );
+          categoryButtons.forEach((btn) =>
+            btn.classList.toggle('text-white', btn.dataset.searchCategory === activeCategory)
+          );
+          filterPosts();
+        });
+      });
+
+      filterPosts();
+    }
+  </script>
+</section>

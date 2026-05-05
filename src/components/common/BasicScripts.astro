@@ -1,0 +1,293 @@
+---
+---
+
+<script is:inline>
+  // Use event delegation for better mobile support and to avoid duplicate listeners
+  if (!window.awDelegatedEvents) {
+    window.awDelegatedEvents = true;
+
+    function toggleMenu(elem) {
+      elem.classList.toggle('expanded');
+      document.body.classList.toggle('overflow-hidden');
+      document.getElementById('header')?.classList.toggle('h-screen');
+      document.getElementById('header')?.classList.toggle('expanded');
+      document.getElementById('header')?.classList.toggle('bg-page');
+      document.querySelector('#header nav')?.classList.toggle('hidden');
+      document.querySelector('#header > div > div:last-child')?.classList.toggle('hidden');
+    }
+
+    function closeMenu() {
+      document.querySelector('[data-aw-toggle-menu]')?.classList.remove('expanded');
+      document.body.classList.remove('overflow-hidden');
+      document.getElementById('header')?.classList.remove('h-screen');
+      document.getElementById('header')?.classList.remove('expanded');
+      document.getElementById('header')?.classList.remove('bg-page');
+      document.querySelector('#header nav')?.classList.add('hidden');
+      document.querySelector('#header > div > div:last-child')?.classList.add('hidden');
+    }
+
+    function handleSocialShare(elem) {
+      const network = elem.getAttribute('data-aw-social-share');
+      const rawUrl = elem.getAttribute('data-aw-url') || window.location.href;
+      const rawText = elem.getAttribute('data-aw-text') || document.title;
+      const url = encodeURIComponent(rawUrl);
+      const text = encodeURIComponent(rawText);
+
+      let href;
+      switch (network) {
+        case 'facebook':
+          href = `https://www.facebook.com/sharer.php?u=${url}`;
+          break;
+        case 'twitter':
+          href = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+          break;
+        case 'linkedin':
+          href = `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${text}`;
+          break;
+        case 'whatsapp':
+          href = `https://wa.me/?text=${text}%20${url}`;
+          break;
+        case 'mail':
+          href = `mailto:?subject=%22${text}%22&body=${text}%20${url}`;
+          break;
+        default:
+          return;
+      }
+
+      if (network === 'mail') {
+        window.location.href = href;
+      } else {
+        // Use window.open synchronously to avoid popup blockers on mobile
+        const shareWindow = window.open(href, '_blank', 'noopener,noreferrer');
+        // Fallback for when popup is blocked - navigate directly
+        if (!shareWindow || shareWindow.closed || typeof shareWindow.closed === 'undefined') {
+          window.location.href = href;
+        }
+      }
+    }
+
+    // Event delegation for click events - more reliable on mobile
+    document.addEventListener('click', function(e) {
+      // Handle toggle menu click
+      const toggleMenuBtn = e.target.closest('[data-aw-toggle-menu]');
+      if (toggleMenuBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMenu(toggleMenuBtn);
+        return;
+      }
+
+      // Handle nav clicks to close menu
+      const navLink = e.target.closest('#header nav a');
+      if (navLink) {
+        closeMenu();
+        return;
+      }
+
+      // Handle social share clicks
+      const shareBtn = e.target.closest('[data-aw-social-share]');
+      if (shareBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSocialShare(shareBtn);
+        return;
+      }
+    }, { capture: true });
+
+    // Touch event handling for better mobile response
+    let touchedElement = null;
+
+    document.addEventListener('touchstart', function(e) {
+      const toggleMenuBtn = e.target.closest('[data-aw-toggle-menu]');
+      const shareBtn = e.target.closest('[data-aw-social-share]');
+      if (toggleMenuBtn || shareBtn) {
+        touchedElement = toggleMenuBtn || shareBtn;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+      if (!touchedElement) return;
+
+      const toggleMenuBtn = e.target.closest('[data-aw-toggle-menu]');
+      const shareBtn = e.target.closest('[data-aw-social-share]');
+
+      if (toggleMenuBtn && touchedElement === toggleMenuBtn) {
+        e.preventDefault();
+        toggleMenu(toggleMenuBtn);
+        touchedElement = null;
+        return;
+      }
+
+      if (shareBtn && touchedElement === shareBtn) {
+        e.preventDefault();
+        handleSocialShare(shareBtn);
+        touchedElement = null;
+        return;
+      }
+
+      touchedElement = null;
+    }, { passive: false });
+
+    // Close menu on screen size change
+    const screenSize = window.matchMedia('(max-width: 767px)');
+    screenSize.addEventListener('change', closeMenu);
+
+    // Scroll handling for sticky header
+    let lastKnownScrollPosition = window.scrollY;
+    let ticking = false;
+
+    function applyHeaderStylesOnScroll() {
+      const header = document.querySelector('#header[data-aw-sticky-header]');
+      if (!header) return;
+      if (lastKnownScrollPosition > 60 && !header.classList.contains('scroll')) {
+        header.classList.add('scroll');
+      } else if (lastKnownScrollPosition <= 60 && header.classList.contains('scroll')) {
+        header.classList.remove('scroll');
+      }
+      ticking = false;
+    }
+
+    document.addEventListener('scroll', function() {
+      lastKnownScrollPosition = window.scrollY;
+      if (!ticking) {
+        window.requestAnimationFrame(applyHeaderStylesOnScroll);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    // Initial scroll check
+    applyHeaderStylesOnScroll();
+  }
+
+  // Page show/load handlers for reset state
+  function onPageShow() {
+    document.documentElement.classList.add('motion-safe:scroll-smooth');
+    const elem = document.querySelector('[data-aw-toggle-menu]');
+    if (elem) {
+      elem.classList.remove('expanded');
+    }
+    document.body.classList.remove('overflow-hidden');
+    document.getElementById('header')?.classList.remove('h-screen');
+    document.getElementById('header')?.classList.remove('expanded');
+    document.querySelector('#header nav')?.classList.add('hidden');
+  }
+
+  // Run on page show/load
+  window.addEventListener('pageshow', onPageShow);
+
+  // Run immediately
+  onPageShow();
+
+  // Astro View Transitions support
+  document.addEventListener('astro:after-swap', onPageShow);
+  document.addEventListener('astro:page-load', onPageShow);
+</script>
+
+<script is:inline>
+  /* Inspired by: https://github.com/heidkaemper/tailwindcss-intersect */
+  const Observer = {
+    observer: null,
+    delayBetweenAnimations: 100,
+    animationCounter: 0,
+    elements: null,
+
+    start() {
+      const selectors = [
+        '[class*=" intersect:"]',
+        '[class*=":intersect:"]',
+        '[class^="intersect:"]',
+        '[class="intersect"]',
+        '[class*=" intersect "]',
+        '[class^="intersect "]',
+        '[class$=" intersect"]',
+      ];
+
+      this.elements = Array.from(document.querySelectorAll(selectors.join(',')));
+
+      const getThreshold = (element) => {
+        if (element.classList.contains('intersect-full')) return 0.99;
+        if (element.classList.contains('intersect-half')) return 0.5;
+        if (element.classList.contains('intersect-quarter')) return 0.25;
+        return 0;
+      };
+
+      this.elements.forEach((el) => {
+        el.setAttribute('no-intersect', '');
+        el._intersectionThreshold = getThreshold(el);
+      });
+
+      const callback = (entries) => {
+        entries.forEach((entry) => {
+          requestAnimationFrame(() => {
+            const target = entry.target;
+            const intersectionRatio = entry.intersectionRatio;
+            const threshold = target._intersectionThreshold;
+
+            if (target.classList.contains('intersect-no-queue')) {
+              if (entry.isIntersecting) {
+                target.removeAttribute('no-intersect');
+                if (target.classList.contains('intersect-once')) {
+                  this.observer.unobserve(target);
+                }
+              } else {
+                target.setAttribute('no-intersect', '');
+              }
+              return;
+            }
+
+            if (intersectionRatio >= threshold) {
+              if (!target.hasAttribute('data-animated')) {
+                target.removeAttribute('no-intersect');
+                target.setAttribute('data-animated', 'true');
+
+                const delay = this.animationCounter * this.delayBetweenAnimations;
+                this.animationCounter++;
+
+                target.style.transitionDelay = `${delay}ms`;
+                target.style.animationDelay = `${delay}ms`;
+
+                if (target.classList.contains('intersect-once')) {
+                  this.observer.unobserve(target);
+                }
+              }
+            } else {
+              target.setAttribute('no-intersect', '');
+              target.removeAttribute('data-animated');
+              target.style.transitionDelay = '';
+              target.style.animationDelay = '';
+
+              this.animationCounter = 0;
+            }
+          });
+        });
+      };
+
+      this.observer = new IntersectionObserver(callback.bind(this), { threshold: [0, 0.25, 0.5, 0.99] });
+
+      this.elements.forEach((el) => {
+        this.observer.observe(el);
+      });
+    },
+
+    /*
+      REF: #643;
+      We need to remove the delay to fix flickering/delay
+      when toggling the theme. Observer only removes them
+      after data-animated is gone (out of view).
+    */
+    removeAnimationDelay() {
+      this.elements.forEach((el) => {
+        if (el.getAttribute('data-animated') === 'true') {
+          el.style.transitionDelay = '';
+          el.style.animationDelay = '';
+        }
+      });
+    },
+  };
+
+  Observer.start();
+
+  document.addEventListener('astro:after-swap', () => {
+    Observer.start();
+  });
+</script>

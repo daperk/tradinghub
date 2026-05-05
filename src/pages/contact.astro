@@ -1,0 +1,80 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import HeroText from '~/components/widgets/HeroText.astro';
+import ContactUs from '~/components/widgets/Contact.astro';
+import Features2 from '~/components/widgets/Features2.astro';
+
+const metadata = {
+  title: 'Contact TradingHub — Get in Touch',
+  description: 'Have questions about sleep optimization, product recommendations, or our guides? Contact the TradingHub team. We typically respond within 24-48 hours.',
+};
+---
+
+<Layout metadata={metadata}>
+  <!-- HeroText Widget ******************* -->
+
+  <HeroText tagline="Contact" title="Get in Touch with TradingHub" />
+
+  <ContactUs
+    id="form"
+    title="Send us a message"
+    subtitle="Have questions about sleep optimization, product recommendations, or specific sleep challenges? We're here to help. For common questions, check our FAQ section on the homepage first - you might find your answer immediately!"
+    inputs={[
+      {
+        type: 'text',
+        name: 'name',
+        label: 'Name',
+        required: true,
+      },
+      {
+        type: 'email',
+        name: 'email',
+        label: 'Email',
+        required: true,
+      },
+    ]}
+    textarea={{
+      label: 'Your Message',
+      placeholder: 'Tell us about your sleep challenge or question...',
+      required: true,
+    }}
+    disclaimer={{
+      label:
+        'By submitting this form, you agree to our Privacy Policy and acknowledge that your information will be used solely to respond to your inquiry.',
+    }}
+    description="We typically respond within 24-48 hours during business days."
+    subject="New TradingHub contact request"
+    source="contact_page"
+    button="Send message"
+  />
+
+  <!-- Features2 Widget ************** -->
+
+  <Features2
+    title="How We Can Help"
+    items={[
+      {
+        title: 'Sleep Optimization Questions',
+        description: 'Questions about improving your sleep quality, implementing our guides, or troubleshooting specific sleep issues.',
+        icon: 'tabler:moon-stars',
+      },
+      {
+        title: 'Product Recommendations',
+        description:
+          'Need personalized advice on sleep tools, supplements, or bedroom equipment based on your specific situation.',
+        icon: 'tabler:bulb',
+      },
+      {
+        title: 'Content Suggestions',
+        description:
+          'Suggestions for topics you would like us to cover, research you would like us to review, or products you would like us to test.',
+        icon: 'tabler:message-dots',
+      },
+      {
+        title: 'Partnership Inquiries',
+        description: 'For brands, researchers, or organizations interested in collaborating with TradingHub.',
+        icon: 'tabler:users',
+      },
+    ]}
+  />
+</Layout>

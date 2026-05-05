@@ -1,0 +1,27 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import Hero from '~/components/widgets/Hero.astro';
+import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
+
+const metadata = {
+  title: 'TradingHub — Honest reviews, real tradeoffs',
+};
+---
+
+<Layout metadata={metadata}>
+  <Hero
+    tagline="Welcome to TradingHub"
+  >
+    <Fragment slot="title">
+      TradingHub
+    </Fragment>
+    <Fragment slot="subtitle">
+      Practical, risk-aware reviews of prop firms, brokers, and trading systems.
+    </Fragment>
+  </Hero>
+
+  <BlogLatestPosts
+    title="Latest Guides"
+    information={`Hands-on, no-fluff reviews and how-to guides.`}
+  />
+</Layout>

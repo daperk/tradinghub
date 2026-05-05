@@ -1,0 +1,28 @@
+---
+/**
+ * AffiliateDisclosure — short notice required by Amazon Associates and FTC.
+ * Render near the top of any post containing affiliate links.
+ */
+interface Props {
+  variant?: 'inline' | 'block';
+  className?: string;
+}
+const { variant = 'block', className = '' } = Astro.props as Props;
+---
+
+{variant === 'block' ? (
+  <aside
+    class={`my-6 p-4 rounded-lg border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-500/60 text-sm leading-relaxed ${className}`}
+    aria-label="Affiliate disclosure"
+  >
+    <p class="m-0">
+      <strong>Disclosure:</strong> This post may contain affiliate links. If you buy something
+      through one, we may earn a small commission at no extra cost to you. We only recommend
+      products we genuinely believe in. <a href="/disclosure" class="underline">Read our full disclosure</a>.
+    </p>
+  </aside>
+) : (
+  <p class={`text-xs text-muted my-2 ${className}`}>
+    Some links below are affiliate links. <a href="/disclosure" class="underline">Disclosure</a>.
+  </p>
+)}

@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================================
+   💙 SleepUpgradeHub Color System
+   ================================ */
+:root {
+  /* Background */
+  --aw-color-bg-page: #f7f9fc;
+
+  /* Brand colors */
+  --aw-color-primary: #1c2a44;
+  /* Deep calming blue */
+  --aw-color-secondary: #7aa2d6;
+  /* Soft accent blue */
+  --aw-color-accent: #cdd8e6;
+  /* Light desaturated blue */
+
+  /* Extended brand system */
+  --brand-primary: #1c2a44;
+  --brand-primary-light: #3a4e6b;
+  --brand-accent: #4f7dcf;
+  --brand-accent-light: #7ea4e3;
+  --brand-check: #4f7dcf;
+
+  /* Text colors */
+  --aw-color-text-page: #1a1a1a;
+  --aw-color-text-muted: #5f6b7c;
+}
+
+@layer utilities {
+  .text-page {
+    color: var(--aw-color-text-page);
+  }
+  .text-muted {
+    color: var(--aw-color-text-muted);
+  }
+}
+
+/* ================================
+   BUTTON FIXES — SleepUpgradeHub
+================================ */
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-full font-semibold text-white transition px-6 py-3 cursor-pointer;
+  background-color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-accent);
+  border-color: var(--brand-accent);
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-full font-medium transition px-6 py-3 cursor-pointer text-page;
+  border: 1px solid var(--brand-primary-light);
+}
+
+.btn-secondary:hover {
+  background-color: var(--brand-accent-light);
+  color: white;
+  border-color: var(--brand-accent-light);
+}
+
+.text-brand {
+  color: var(--brand-accent);
+}
+

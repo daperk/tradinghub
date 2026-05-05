@@ -1,0 +1,16 @@
+---
+/**
+ * AdSense loader — included in the head only when ADSENSE is enabled.
+ * Required once per page; AdSlot units then push themselves.
+ */
+const enabled = import.meta.env.PUBLIC_ADSENSE_ENABLED === 'true';
+const client = import.meta.env.PUBLIC_ADSENSE_CLIENT;
+---
+
+{enabled && client && (
+  <script
+    async
+    src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${client}`}
+    crossorigin="anonymous"
+  />
+)}

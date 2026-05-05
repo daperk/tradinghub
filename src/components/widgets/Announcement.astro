@@ -1,0 +1,21 @@
+---
+import { findLatestPosts } from '~/utils/blog';
+import { getPermalink } from '~/utils/permalinks';
+
+const posts = await findLatestPosts({ count: 1 });
+const latestPost = posts[0];
+---
+
+{latestPost && (
+  <div
+    class="text-sm bg-[#e9f0f7]/90 border-b border-[#d2dce7] hidden md:flex gap-2 px-4 py-2 whitespace-nowrap items-center"
+  >
+    <span class="bg-[#1c2a44] text-white px-2 py-0.5 text-xs font-semibold rounded"> UPDATED </span>
+
+    <a href={getPermalink(latestPost.permalink, 'post')} class="text-[#1c2a44] hover:underline font-medium">
+      New: {latestPost.title} »
+    </a>
+
+    <span class="ml-auto text-[#5f6b7c] font-medium"> SleepUpgradeHub </span>
+  </div>
+)}
