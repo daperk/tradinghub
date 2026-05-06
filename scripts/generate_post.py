@@ -25,7 +25,12 @@ def _build_prompt(keyword: str, category: str, niche_cfg: dict,
     pillars_block = "\n".join(f"- {url} ({title})" for url, title in pillar_posts) \
         or "(no pillar posts yet — use plain anchor text without href)"
 
+    current_year = datetime.now().year
     return f"""Write a unique blog post for {niche_cfg["domain"]}.
+
+CURRENT YEAR: {current_year} — use {current_year} for all date references,
+prices, "best of" framing, and recency claims. Never write 2025 or earlier
+unless explicitly comparing historical data.
 
 KEYWORD: {keyword}
 CATEGORY: {category}
@@ -42,7 +47,7 @@ STRUCTURE (1800-2200 words):
 REQUIREMENTS:
 - Short paragraphs (2-3 sentences max)
 - **Bold** product names
-- Real 2025 prices when relevant
+- Real current-year prices when relevant
 - Bullet lists for features
 - 2-3 internal links from this list (markdown format):
 {pillars_block}

@@ -7,7 +7,11 @@ const metadata = {
   description: `Get in touch with the ${SITE.name} team. We typically respond within 24-48 hours.`,
 };
 
-const WEB3FORMS_KEY = import.meta.env.PUBLIC_WEB3FORMS_KEY || '';
+// Web3Forms access keys are public by design (embedded in client HTML).
+// Override per-site by setting PUBLIC_WEB3FORMS_KEY in Vercel env vars.
+const WEB3FORMS_KEY =
+  import.meta.env.PUBLIC_WEB3FORMS_KEY ||
+  'e1fbb6d8-7333-43a3-9d46-2bf93f979dec';
 ---
 
 <Layout metadata={metadata}>
