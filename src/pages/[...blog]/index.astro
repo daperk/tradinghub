@@ -7,10 +7,8 @@ import Layout from '~/layouts/PageLayout.astro';
 import EnhancedSinglePost from '~/components/blog/EnhancedSinglePost.astro';
 import ToBlogLink from '~/components/blog/ToBlogLink.astro';
 import RelatedReads from '~/components/blog/RelatedReads.astro';
-import CompactEmailCTA from '~/components/widgets/CompactEmailCTA.astro';
-
 import { getCanonical, getPermalink } from '~/utils/permalinks';
-import { getStaticPathsBlogPost, blogPostRobots, findLatestPosts } from '~/utils/blog';
+import { getStaticPathsBlogPost, blogPostRobots, findRelatedPosts } from '~/utils/blog';
 import { findImage } from '~/utils/images';
 import type { MetaData } from '~/types';
 
@@ -27,8 +25,8 @@ const { post } = Astro.props as Props;
 const url = getCanonical(getPermalink(post.permalink, 'post'));
 const image = (await findImage(post.image)) as ImageMetadata | string | undefined;
 
-// Get related posts for the Related Reads section (Healthline style)
-const relatedPosts = await findLatestPosts({ count: 3 });
+// Cross-cluster related posts (excludes same canonical group + the post itself)
+const relatedPosts = await findRelatedPosts(post, 3);
 
 const metadata = merge(
   {
@@ -58,11 +56,6 @@ const metadata = merge(
   <!-- Related Reads Section (Healthline style - end of article) -->
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-8">
     <RelatedReads posts={relatedPosts} />
-  </div>
-
-  <!-- Compact Email CTA (Healthline style) -->
-  <div class="bg-gray-50 py-12">
-    <CompactEmailCTA />
   </div>
 
   <!-- Back to Blog Link -->

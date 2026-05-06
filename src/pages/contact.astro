@@ -1,80 +1,85 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
-import HeroText from '~/components/widgets/HeroText.astro';
-import ContactUs from '~/components/widgets/Contact.astro';
-import Features2 from '~/components/widgets/Features2.astro';
+import { SITE } from 'astrowind:config';
 
 const metadata = {
-  title: 'Contact TradingHub — Get in Touch',
-  description: 'Have questions about sleep optimization, product recommendations, or our guides? Contact the TradingHub team. We typically respond within 24-48 hours.',
+  title: `Contact ${SITE.name}`,
+  description: `Get in touch with the ${SITE.name} team. We typically respond within 24-48 hours.`,
 };
+
+const WEB3FORMS_KEY = import.meta.env.PUBLIC_WEB3FORMS_KEY || '';
 ---
 
 <Layout metadata={metadata}>
-  <!-- HeroText Widget ******************* -->
+  <section class="px-4 py-16 sm:px-6 mx-auto lg:px-8 lg:py-20 max-w-3xl">
+    <h1 class="font-bold font-heading text-4xl md:text-5xl leading-tighter tracking-tighter mb-4">
+      Contact {SITE.name}
+    </h1>
+    <p class="text-muted text-lg mb-10">
+      Send us a question, suggestion, or partnership inquiry. We typically respond within 1-2 business days.
+    </p>
 
-  <HeroText tagline="Contact" title="Get in Touch with TradingHub" />
+    {WEB3FORMS_KEY ? (
+      <form
+        action="https://api.web3forms.com/submit"
+        method="POST"
+        class="space-y-5"
+      >
+        <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
+        <input type="hidden" name="subject" value={`New contact request — ${SITE.name}`} />
+        <input type="hidden" name="from_name" value={SITE.name} />
+        <input type="checkbox" name="botcheck" class="hidden" style="display:none" />
 
-  <ContactUs
-    id="form"
-    title="Send us a message"
-    subtitle="Have questions about sleep optimization, product recommendations, or specific sleep challenges? We're here to help. For common questions, check our FAQ section on the homepage first - you might find your answer immediately!"
-    inputs={[
-      {
-        type: 'text',
-        name: 'name',
-        label: 'Name',
-        required: true,
-      },
-      {
-        type: 'email',
-        name: 'email',
-        label: 'Email',
-        required: true,
-      },
-    ]}
-    textarea={{
-      label: 'Your Message',
-      placeholder: 'Tell us about your sleep challenge or question...',
-      required: true,
-    }}
-    disclaimer={{
-      label:
-        'By submitting this form, you agree to our Privacy Policy and acknowledge that your information will be used solely to respond to your inquiry.',
-    }}
-    description="We typically respond within 24-48 hours during business days."
-    subject="New TradingHub contact request"
-    source="contact_page"
-    button="Send message"
-  />
+        <div>
+          <label for="name" class="block text-sm font-medium mb-1">Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            required
+            class="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
 
-  <!-- Features2 Widget ************** -->
+        <div>
+          <label for="email" class="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            class="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
 
-  <Features2
-    title="How We Can Help"
-    items={[
-      {
-        title: 'Sleep Optimization Questions',
-        description: 'Questions about improving your sleep quality, implementing our guides, or troubleshooting specific sleep issues.',
-        icon: 'tabler:moon-stars',
-      },
-      {
-        title: 'Product Recommendations',
-        description:
-          'Need personalized advice on sleep tools, supplements, or bedroom equipment based on your specific situation.',
-        icon: 'tabler:bulb',
-      },
-      {
-        title: 'Content Suggestions',
-        description:
-          'Suggestions for topics you would like us to cover, research you would like us to review, or products you would like us to test.',
-        icon: 'tabler:message-dots',
-      },
-      {
-        title: 'Partnership Inquiries',
-        description: 'For brands, researchers, or organizations interested in collaborating with TradingHub.',
-        icon: 'tabler:users',
-      },
-    ]}
-  />
+        <div>
+          <label for="message" class="block text-sm font-medium mb-1">Message</label>
+          <textarea
+            id="message"
+            name="message"
+            rows="6"
+            required
+            class="w-full px-4 py-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        </div>
+
+        <p class="text-xs text-muted">
+          By submitting this form, you agree to our <a href="/privacy" class="underline">Privacy Policy</a>.
+        </p>
+
+        <button
+          type="submit"
+          class="px-6 py-3 rounded-full bg-primary text-white font-semibold hover:opacity-90 transition"
+        >
+          Send message
+        </button>
+      </form>
+    ) : (
+      <div class="p-6 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-500/60">
+        <p class="text-sm">
+          Contact form is being configured. Meanwhile, you can reach us via the channels listed in our footer.
+        </p>
+      </div>
+    )}
+  </section>
 </Layout>

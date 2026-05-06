@@ -7,12 +7,11 @@ import SocialShare from '~/components/common/SocialShare.astro';
 import Schema from '~/components/common/Schema.astro';
 import TOC from '~/components/blog/TOC.astro';
 import AuthorBio from '~/components/blog/AuthorBio.astro';
-import AffiliateDisclosure from '~/components/common/AffiliateDisclosure.astro';
 import AdSlot from '~/components/common/AdSlot.astro';
+import { SITE } from 'astrowind:config';
 
 import { getPermalink } from '~/utils/permalinks';
 import { getFormattedDate } from '~/utils/utils';
-import NewsletterForm from '~/components/common/NewsletterForm.astro';
 
 import type { Post } from '~/types';
 
@@ -29,7 +28,7 @@ const articleSchema = {
   description: post.excerpt || '',
   datePublished: post.publishDate.toISOString(),
   dateModified: (post.updateDate || post.publishDate).toISOString(),
-  author: post.author || 'SleepUpgradeHub',
+  author: post.author || SITE.name,
   image: post.image ? String(url).replace(/\/[^\/]+$/, '') + post.image : undefined,
   url: String(url),
 };
@@ -118,12 +117,6 @@ const articleSchema = {
         <!-- MAIN CONTENT COLUMN (Ideal Reading Width ~700-800px) -->
         <div class="lg:col-span-8 xl:col-span-8">
           <div class="max-w-3xl mx-auto lg:mx-0">
-            <!-- Affiliate disclosure above the fold (FTC + Amazon Associates compliant) -->
-            <AffiliateDisclosure variant="block" className="mb-6" />
-
-            <!-- Top of article ad slot (no-op until AdSense enabled) -->
-            <AdSlot slot="article-top" format="auto" className="my-4" />
-
             <!-- Article Content with Healthline-style Typography -->
             <div
               class="prose prose-lg max-w-none
@@ -204,28 +197,8 @@ const articleSchema = {
               </div>
             )}
 
-            <!-- Compact Email CTA (Sidebar) -->
-            <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-md">
-              <div class="flex items-start gap-3 mb-3">
-                <Icon name="tabler:mail" class="w-7 h-7 text-brand-accent mt-1" />
-                <div>
-                  <h3 class="text-lg font-bold mb-1 text-gray-900">
-                    Get Sleep Tips Weekly
-                  </h3>
-                  <p class="text-sm text-gray-700 leading-snug">
-                    Science-backed strategies delivered to your inbox.
-                  </p>
-                </div>
-              </div>
-              <NewsletterForm
-                source="article_sidebar_cta"
-                layoutClass="space-y-3"
-                inputPlaceholder="Your email"
-                inputClass="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-300 placeholder-gray-500 text-gray-900 focus:ring-2 focus:ring-brand-accent focus:border-transparent transition focus:outline-none"
-                buttonClass="inline-block w-full px-4 py-3 bg-gray-900 text-white rounded-lg font-semibold text-center text-sm hover:bg-gray-800 transition disabled:bg-gray-200 disabled:text-gray-600 disabled:cursor-not-allowed"
-                buttonText="Subscribe"
-              />
-            </div>
+            <!-- Sidebar bottom ad slot (no-op until AdSense enabled) -->
+            <AdSlot slot="sidebar-bottom" format="auto" className="mt-2" />
           </div>
         </div>
       </div>

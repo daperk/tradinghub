@@ -32,3 +32,6 @@ scripts/__pycache__/
 *.pyc
 .venv/
 venv/
+
+# Claude Code internals
+.claude/

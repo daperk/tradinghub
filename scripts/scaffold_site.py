@@ -21,7 +21,7 @@ from niches import NICHES
 
 SRC = Path("C:/Users/06123/GitHub/astrowind")
 
-EXCLUDE_DIRS = {".git", "node_modules", "dist", ".astro", ".vercel",
+EXCLUDE_DIRS = {".git", ".github", "node_modules", "dist", ".astro", ".vercel",
                 ".claude", "data", "venv", ".venv"}
 
 EXCLUDE_FILES = {".env", ".env.production", ".env.local",
@@ -59,6 +59,96 @@ def copy_tree(src: Path, dst: Path) -> int:
         shutil.copy2(p, target)
         n += 1
     return n
+
+
+NICHE_PALETTES = {
+    "trading": {
+        "page_bg": "#f7faf8",
+        "primary": "#0f3d2e",
+        "secondary": "#10b981",
+        "accent": "#34d399",
+        "brand_primary": "#0f3d2e",
+        "brand_primary_light": "#1f5a44",
+        "brand_accent": "#10b981",
+        "brand_accent_light": "#6ee7b7",
+    },
+    "ai-tools": {
+        "page_bg": "#fafaff",
+        "primary": "#1e1b4b",
+        "secondary": "#8b5cf6",
+        "accent": "#c4b5fd",
+        "brand_primary": "#1e1b4b",
+        "brand_primary_light": "#3730a3",
+        "brand_accent": "#8b5cf6",
+        "brand_accent_light": "#c4b5fd",
+    },
+    "dev-tools": {
+        "page_bg": "#fffaf6",
+        "primary": "#7c2d12",
+        "secondary": "#f97316",
+        "accent": "#fdba74",
+        "brand_primary": "#7c2d12",
+        "brand_primary_light": "#9a3412",
+        "brand_accent": "#f97316",
+        "brand_accent_light": "#fdba74",
+    },
+}
+
+
+def write_tailwind_css(target: Path, niche_key: str, site_name_pretty: str) -> None:
+    palette = NICHE_PALETTES.get(niche_key)
+    if not palette:
+        return  # sleep keeps default (already in template)
+    css = f"""@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* {site_name_pretty} color system */
+:root {{
+  --aw-color-bg-page: {palette["page_bg"]};
+
+  --aw-color-primary: {palette["primary"]};
+  --aw-color-secondary: {palette["secondary"]};
+  --aw-color-accent: {palette["accent"]};
+
+  --brand-primary: {palette["brand_primary"]};
+  --brand-primary-light: {palette["brand_primary_light"]};
+  --brand-accent: {palette["brand_accent"]};
+  --brand-accent-light: {palette["brand_accent_light"]};
+  --brand-check: {palette["brand_accent"]};
+
+  --aw-color-text-page: #1a1a1a;
+  --aw-color-text-muted: #5f6b7c;
+}}
+
+@layer utilities {{
+  .text-page {{ color: var(--aw-color-text-page); }}
+  .text-muted {{ color: var(--aw-color-text-muted); }}
+}}
+
+.btn-primary {{
+  @apply inline-flex items-center justify-center rounded-full font-semibold text-white transition px-6 py-3 cursor-pointer;
+  background-color: var(--brand-primary);
+  border: 1px solid var(--brand-primary);
+}}
+.btn-primary:hover {{
+  background-color: var(--brand-accent);
+  border-color: var(--brand-accent);
+}}
+
+.btn-secondary {{
+  @apply inline-flex items-center justify-center rounded-full font-medium transition px-6 py-3 cursor-pointer text-page;
+  border: 1px solid var(--brand-primary-light);
+}}
+.btn-secondary:hover {{
+  background-color: var(--brand-accent-light);
+  color: white;
+  border-color: var(--brand-accent-light);
+}}
+
+.text-brand {{ color: var(--brand-accent); }}
+"""
+    (target / "src" / "assets" / "styles" / "tailwind.css").write_text(css, encoding="utf-8")
 
 
 def write_config_yaml(target: Path, niche_cfg: dict, site_name_pretty: str) -> None:
@@ -279,7 +369,7 @@ const metadata = {{
     columns={{3}}
     items={{[
       {{ title: 'No paid placements', description: 'Recommendations are independent. Affiliate links never alter rankings.', icon: 'tabler:shield-check' }},
-      {{ title: 'Honest tradeoffs', description: 'Every guide names what we'd skip and why.', icon: 'tabler:scale' }},
+      {{ title: 'Honest tradeoffs', description: 'Every guide names what we would skip and why.', icon: 'tabler:scale' }},
       {{ title: 'Updated frequently', description: 'We revisit content as products and pricing change.', icon: 'tabler:refresh' }},
     ]}}
   />
@@ -351,6 +441,29 @@ Review the post, then drop `--no-deploy` to let it commit + push + trigger Verce
     (target / "NEXT_STEPS.md").write_text(content, encoding="utf-8")
 
 
+def _wipe_except_git(root: Path) -> None:
+    """Delete every entry in `root` except the .git folder. Tolerates
+    Windows readonly markers."""
+    import stat
+    def onexc(func, path, exc_info):
+        try:
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+        except Exception:
+            pass
+    for p in root.iterdir():
+        if p.name == ".git":
+            continue
+        if p.is_dir():
+            shutil.rmtree(p, onexc=onexc)
+        else:
+            try:
+                p.unlink()
+            except PermissionError:
+                os.chmod(p, stat.S_IWRITE)
+                p.unlink()
+
+
 def scaffold(niche_key: str, target: Path, force: bool = False) -> int:
     cfg = NICHES.get(niche_key)
     if not cfg:
@@ -360,9 +473,9 @@ def scaffold(niche_key: str, target: Path, force: bool = False) -> int:
     if target.exists() and any(target.iterdir()):
         if not force:
             print(f"[scaffold] target exists and is not empty: {target}")
-            print("  pass --force to overwrite")
+            print("  pass --force to overwrite (preserves .git)")
             return 1
-        shutil.rmtree(target)
+        _wipe_except_git(target)
 
     site_name_pretty = site_name_for(cfg)
     domain = cfg["domain"]
@@ -377,6 +490,7 @@ def scaffold(niche_key: str, target: Path, force: bool = False) -> int:
     write_navigation_ts(target, cfg, site_name_pretty)
     write_homepage(target, cfg, site_name_pretty)
     write_about(target, site_name_pretty, cfg)
+    write_tailwind_css(target, niche_key, site_name_pretty)
 
     legal_replacements = [
         ("SleepUpgradeHub", site_name_pretty),

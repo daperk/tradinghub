@@ -54,7 +54,7 @@ def run_batch(site_slug: str, count: int, *,
         if not kw:
             print(f"[batch] queue empty after {i} posts")
             break
-        print(f"\n[batch] {i+1}/{count} → {kw['keyword']!r}")
+        print(f"\n[batch] {i+1}/{count} -> {kw['keyword']!r}")
         try:
             rc = run_pipeline(
                 site_slug, kw["keyword"],

@@ -176,6 +176,45 @@ export const findLatestPosts = async ({ count }: { count?: number }): Promise<Ar
   return posts ? posts.slice(0, _count) : [];
 };
 
+/**
+ * Pick related posts that are NOT in the same cluster as the current post.
+ * Excludes self, excludes posts whose metadata.canonical matches the current
+ * post's canonical (same cluster), and excludes posts that ARE the current
+ * canonical target. Falls back to recent posts if not enough cross-cluster
+ * candidates exist.
+ */
+export const findRelatedPosts = async (
+  currentPost: Post,
+  count = 3
+): Promise<Array<Post>> => {
+  const all = await fetchPosts();
+  if (!all || !all.length) return [];
+
+  const currentCanonical =
+    (currentPost as { metadata?: { canonical?: string } }).metadata?.canonical || '';
+  const currentSlug = currentPost.slug;
+
+  const sameCluster = (p: Post): boolean => {
+    if (p.slug === currentSlug) return true;
+    const c = (p as { metadata?: { canonical?: string } }).metadata?.canonical;
+    if (currentCanonical && c && c === currentCanonical) return true;
+    if (currentCanonical && p.permalink && currentCanonical.includes(p.permalink)) return true;
+    if (c && currentPost.permalink && c.includes(currentPost.permalink)) return true;
+    return false;
+  };
+
+  const crossCluster = all.filter((p) => !sameCluster(p));
+
+  const sameCategoryFirst = crossCluster
+    .filter((p) => p.category?.slug && p.category?.slug === currentPost.category?.slug);
+  const otherCategory = crossCluster
+    .filter((p) => !sameCategoryFirst.includes(p));
+
+  const ordered = [...sameCategoryFirst, ...otherCategory];
+  if (ordered.length >= count) return ordered.slice(0, count);
+  return ordered.slice(0, count);
+};
+
 /** */
 export const getStaticPathsBlogList = async ({ paginate }: { paginate: PaginateFunction }) => {
   if (!isBlogEnabled || !isBlogListRouteEnabled) return [];
